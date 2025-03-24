@@ -12,6 +12,19 @@ public class HandController : MonoBehaviour
     private Vector3 rightWristPosition;
 
     [SerializeField] GameObject ObjectToMove;
+    [SerializeField] Canvas canvas;
+    [SerializeField] RectTransform circleUI;
+    private Vector3 lastKnownPosition = Vector3.zero;
+    [SerializeField] private float smoothSpeed = 0.1f; // Adjust this value to control the smoothness
+    [SerializeField] private float movementThreshold = 0.1f;
+
+
+
+    #region
+    [SerializeField] GameObject motherNature;
+    [SerializeField] Vector2 threshold;
+    [SerializeField] float movementSpeed;
+    #endregion
 
     // Start is called before the first frame update
     private void Awake()
@@ -22,29 +35,34 @@ public class HandController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (ObjectToMove!= null && rightWristPosition!= null)
+        if (circleUI!= null && rightWristPosition!= null)
         {
             float screenX = rightWristPosition.x * Screen.width;
             float screenY = (1 - rightWristPosition.y) * Screen.height; // Invert Y for screen space
+            float distance = Vector3.Distance(lastKnownPosition, new Vector3(screenX, screenY, 0f));
 
-            // Convert screen coordinates to world position
-            Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenX, screenY, Camera.main.nearClipPlane + 5f));
+            // Only move the UI element if the distance is greater than the threshold
+            if (distance > movementThreshold)
+            {
+                Vector3 targetPosition = new Vector3(screenX, screenY, 0f);
 
-            // Move the object based on the right wrist position
-            ObjectToMove.transform.position = Vector3.Lerp(ObjectToMove.transform.position, worldPosition, Time.deltaTime * 5f);
+                // Apply smoothing to the target position (exponential smoothing)
+                circleUI.position = Vector3.Lerp(circleUI.position, targetPosition, smoothSpeed);
+                lastKnownPosition = targetPosition;
+
+            }
+
+
+            float mappedRotation = Mathf.Lerp(threshold.x, threshold.y, Mathf.InverseLerp(0f, Screen.width, screenX));
+
+            // Rotate the target object smoothly (using Lerp to smooth the rotation)
+            float currentRotationY = Mathf.LerpAngle(motherNature.transform.eulerAngles.y, mappedRotation, movementSpeed);
+            motherNature.transform.rotation = Quaternion.Euler(0f, currentRotationY, 0f);
+
+
 
         }
     }
 
-    public void MoveHand(float screenX,float screenY,GameObject objectToMove)
-    {
-        // Convert screen coordinates to world position (assuming a 2D camera)
-        Vector3 worldPosition = Camera.main.ScreenToWorldPoint(new Vector3(screenX, screenY, Camera.main.nearClipPlane + 5f));
-
-        // Move the object
-        if (objectToMove != null)
-        {
-            objectToMove.transform.position = worldPosition;
-        }
-    }
+   
 }

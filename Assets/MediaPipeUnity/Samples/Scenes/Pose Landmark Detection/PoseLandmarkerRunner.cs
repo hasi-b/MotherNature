@@ -167,7 +167,7 @@ namespace Mediapipe.Unity.Sample.PoseLandmarkDetection
                 Debug.Log("there");
 
                 var firstPose = result.poseLandmarks[0];
-                var rightWrist = firstPose.landmarks[16];
+                var rightWrist = firstPose.landmarks[15];
                 if (rightWrist != null)
                 {
                     HandController.Instance.RightWristPosition = new Vector3(rightWrist.x, rightWrist.y, 0f);
